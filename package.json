@@ -23,5 +23,15 @@
     "@earendil-works/pi-ai": "^1.5.0",
     "@earendil-works/pi-durable": "^1.5.0",
     "agents": "^0.33.0"
+  },
+  "cloudflare": {
+    "bindings": {
+      "AUTH_TOKEN": {
+        "description": "Used to sign in to the web UI and call `/api/*`. Generate a long random value, for example `openssl rand -hex 32`."
+      },
+      "CONFIG_ENCRYPTION_KEY": {
+        "description": "Master key used to encrypt stored model API keys. Generate a 32-byte base64 value, for example `openssl rand -base64 32`. Changing it makes existing saved keys unreadable."
+      }
+    }
   }
 }

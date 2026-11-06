@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="color-scheme" content="light dark" />
+		<title>My Agent</title>
+		<link rel="stylesheet" href="/style.css" />
+	</head>
+	<body>
+		<section id="login" class="login hidden">
+			<form id="login-form" class="login-card">
+				<h1>My Agent</h1>
+				<p class="muted">输入部署时设置的 <code>AUTH_TOKEN</code> 连接你的 Pi Agent。</p>
+				<label class="field">
+					<span>访问令牌</span>
+					<input
+						id="token-input"
+						type="password"
+						autocomplete="current-password"
+						placeholder="AUTH_TOKEN"
+						required
+					/>
+				</label>
+				<button class="primary" type="submit">连接</button>
+				<p id="login-error" class="error-text" role="alert"></p>
+				<p class="fine-print">令牌只保存在本机浏览器，不会写入页面或服务器日志。</p>
+			</form>
+		</section>
+
+		<div id="app" class="app hidden">
+			<header class="topbar">
+				<div class="brand">
+					<span class="dot"></span>
+					<span>My Agent</span>
+				</div>
+				<button id="model-badge" class="model-badge" type="button" title="打开模型设置">
+					未配置模型
+				</button>
+				<div class="topbar-actions">
+					<button id="settings-btn" class="ghost" type="button">设置</button>
+					<button id="logout-btn" class="ghost" type="button">退出</button>
+				</div>
+			</header>
+
+			<main class="chat">
+				<div id="messages" class="messages" aria-live="polite"></div>
+				<div id="empty" class="empty">
+					<h2>开始对话</h2>
+					<p>先在「设置」中添加一个 OpenAI 兼容模型，然后在这里提问。</p>
+				</div>
+
+				<form id="composer" class="composer">
+					<textarea
+						id="prompt"
+						rows="1"
+						placeholder="给 Pi 发消息…"
+						maxlength="32000"
+					></textarea>
+					<button id="send" class="primary" type="submit">发送</button>
+				</form>
+				<p class="composer-hint">Enter 发送 · Shift + Enter 换行</p>
+			</main>
+		</div>
+
+		<div id="settings" class="overlay hidden">
+			<section class="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+				<header class="panel-header">
+					<h2 id="settings-title">模型设置</h2>
+					<button id="settings-close" class="icon-button" type="button" aria-label="关闭">×</button>
+				</header>
+
+				<div id="encryption-warning" class="warning hidden">
+					服务端还没有配置 <code>CONFIG_ENCRYPTION_KEY</code>，暂时无法保存 API Key。
+					请先执行 <code>npx wrangler secret put CONFIG_ENCRYPTION_KEY</code>。
+				</div>
+
+				<div class="panel-section">
+					<div class="section-head">
+						<h3>已保存的配置</h3>
+						<span id="profile-count" class="muted"></span>
+					</div>
+					<div id="profile-list" class="profile-list"></div>
+				</div>
+
+				<div class="panel-section">
+					<div class="section-head">
+						<h3 id="form-title">新增配置</h3>
+						<button id="form-cancel" class="link-button hidden" type="button">取消编辑</button>
+					</div>
+
+					<form id="profile-form" class="profile-form">
+						<div class="grid-2">
+							<label class="field">
+								<span>名称</span>
+								<input id="profile-name" type="text" maxlength="60" placeholder="例如：DeepSeek" required />
+							</label>
+							<label class="field">
+								<span>模型 ID</span>
+								<input id="profile-model" type="text" maxlength="200" placeholder="deepseek-chat" required />
+							</label>
+						</div>
+
+						<label class="field">
+							<span>Base URL</span>
+							<input
+								id="profile-baseurl"
+								type="url"
+								maxlength="500"
+								placeholder="https://api.deepseek.com"
+								required
+							/>
+							<small>填写到 <code>/v1</code> 为止的完整前缀，不要包含 <code>/chat/completions</code>。</small>
+						</label>
+
+						<label class="field">
+							<span>API Key</span>
+							<input
+								id="profile-key"
+								type="password"
+								autocomplete="off"
+								placeholder="sk-…"
+							/>
+							<small id="key-hint">新建配置必须填写。保存后无法再读回明文。</small>
+						</label>
+
+						<details class="advanced">
+							<summary>高级参数</summary>
+							<div class="grid-3">
+								<label class="field">
+									<span>上下文窗口</span>
+									<input id="profile-context" type="number" min="1024" max="2000000" step="1024" value="128000" />
+								</label>
+								<label class="field">
+									<span>最大输出 Token</span>
+									<input id="profile-maxtokens" type="number" min="1" max="131072" step="256" value="8192" />
+								</label>
+								<label class="field checkbox">
+									<input id="profile-reasoning" type="checkbox" />
+									<span>支持 reasoning</span>
+								</label>
+							</div>
+						</details>
+
+						<div class="form-actions">
+							<button class="primary" type="submit">保存配置</button>
+							<span id="form-status" class="muted"></span>
+						</div>
+					</form>
+				</div>
+
+				<footer class="panel-footer">
+					<button id="reset-btn" class="danger-link" type="button">清空当前对话</button>
+					<span class="muted">所有浏览器共享同一段对话历史。</span>
+				</footer>
+			</section>
+		</div>
+
+		<div id="toast" class="toast hidden" role="status"></div>
+
+		<script src="/app.js" type="module"></script>
+	</body>
+</html>
